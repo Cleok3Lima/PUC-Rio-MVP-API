@@ -89,6 +89,21 @@ def manage_tarefas():
         print("Error:", str(e))  # Log the error
         return jsonify(message=str(e)), 500
 
+@app.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
+@jwt_required()
+def delete_tarefa(tarefa_id):
+    try:
+        user_id = get_jwt_identity()
+        tarefa = Tarefa.query.filter_by(id=tarefa_id, user_id=user_id).first()
+        if not tarefa:
+            return jsonify(message="Tarefa not found"), 404
+        db.session.delete(tarefa)
+        db.session.commit()
+        return jsonify(message="Tarefa deleted"), 200
+    except Exception as e:
+        print("Error:", str(e))  # Log the error
+        return jsonify(message=str(e)), 500
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Cria todas as tabelas no banco de dados

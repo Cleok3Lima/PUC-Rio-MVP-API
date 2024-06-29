@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 class TarefaSchema(BaseModel):
+    id: Optional[int] = None
     title: str
     description: Optional[str]
     due_date: Optional[datetime]

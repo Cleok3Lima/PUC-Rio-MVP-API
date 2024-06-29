@@ -8,3 +8,6 @@ class Tarefa(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
     completed = db.Column(db.Boolean, default=False)
     usuario = db.relationship('Usuario', backref=db.backref('tarefas', lazy=True))
+
+    def __repr__(self):
+            return f'<Tarefa {self.title}>'
