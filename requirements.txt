@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+Flask-JWT-Extended
+Pydantic
+flask-openapi3
+werkzeug
