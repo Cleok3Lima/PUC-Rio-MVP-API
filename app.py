@@ -10,6 +10,7 @@ from model.tarefa import Tarefa
 from schemas.usuario import UsuarioSchema
 from schemas.tarefa import TarefaSchema
 from typing import List
+from datetime import datetime
 
 info = Info(title="Gestão de Tempo API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
@@ -73,19 +74,17 @@ def manage_tarefas():
             data = request.get_json()
             print("Data received:", data)  # Log the received data
             tarefa_schema = TarefaSchema(**data)
-            new_tarefa = Tarefa(user_id=user_id, **tarefa_schema.dict())
+            tarefa_data = tarefa_schema.model_dump()
+            if tarefa_data['due_date']:
+                tarefa_data['due_date'] = datetime.strptime(tarefa_data['due_date'], '%d/%m/%Y')
+            new_tarefa = Tarefa(user_id=user_id, **tarefa_data)
             db.session.add(new_tarefa)
             db.session.commit()
             return jsonify(message="Tarefa created"), 201
         elif request.method == 'GET':
             tarefas = Tarefa.query.filter_by(user_id=user_id).all()
-            tarefas_schema = [TarefaSchema(
-                title=tarefa.title,
-                description=tarefa.description,
-                due_date=tarefa.due_date,
-                completed=tarefa.completed
-            ) for tarefa in tarefas]
-            return jsonify([tarefa.dict() for tarefa in tarefas_schema])
+            tarefas_schema = [TarefaSchema.model_validate(tarefa) for tarefa in tarefas]
+            return jsonify([tarefa.model_dump() for tarefa in tarefas_schema])
     except Exception as e:
         print("Error:", str(e))  # Log the error
         return jsonify(message=str(e)), 500
