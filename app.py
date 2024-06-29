@@ -1,12 +1,13 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_openapi3 import OpenAPI, Info, Tag
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from model.base import db
 from model.usuario import Usuario
 from model.tarefa import Tarefa
+from schemas.error import ErrorSchema
 from schemas.usuario import UsuarioSchema
 from schemas.tarefa import TarefaSchema
 from typing import List
@@ -17,44 +18,60 @@ app = OpenAPI(__name__, info=info)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tarefas.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'super-secret'  # Substitua por uma chave secreta segura
+app.config['JWT_SECRET_KEY'] = 'super-secret'  # Deve ser substituida por uma chave secreta segura
 
 db.init_app(app)
 jwt = JWTManager(app)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Configurar CORS
 
-# Tags for API documentation
+# Configurar CORS globalmente para permitir o cabeçalho Authorization
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "DELETE", "OPTIONS"])
+
+# Tags para a documentação da API
 user_tag = Tag(name="User", description="Operations related to users")
 task_tag = Tag(name="Task", description="Operations related to tasks")
 
-@app.route('/register', methods=['POST'])
+@app.route('/')
+def index():
+    return redirect('/openapi')
+
+@app.post('/register', tags=[user_tag],
+          responses={"200": UsuarioSchema, "404": ErrorSchema})
+@cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def register():
+    """
+    Registrar um novo usuário
+    """
     try:
         data = request.get_json()
-        print("Data received:", data)  # Log the received data
+        print("Data received:", data)  # Log dos dados recebidos
         if not data or not 'username' in data or not 'password' in data:
             return jsonify({"message": "Username and password are required"}), 400
 
         try:
-            user_data = UsuarioSchema(**data)  # Use o ** para passar os dados corretamente
+            user_data = UsuarioSchema(**data)
             new_user = Usuario(username=user_data.username)
             new_user.set_password(user_data.password)  # Ajuste para definir a senha corretamente
             db.session.add(new_user)
             db.session.commit()
             return jsonify(message="User created"), 201
         except ValidationError as ve:
-            print("ValidationError:", ve.errors())  # Log validation errors
+            print("ValidationError:", ve.errors())  # Log dos erros de validação
             return jsonify(message=str(ve)), 400
 
     except Exception as e:
         print("Error:", str(e))  # Log the error
         return jsonify(message=str(e)), 500
 
-@app.route('/login', methods=['POST'])
+@app.post('/login', tags=[user_tag],
+          responses={"200": UsuarioSchema, "404": ErrorSchema})
+@cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def login():
+    """
+    Login de usuário
+    """
     try:
         data = request.get_json()
-        print("Data received:", data)  # Log the received data
+        print("Data received:", data)  # Log dos dados recebidos
         user = Usuario.query.filter_by(username=data['username']).first()
         if user and user.check_password(data['password']):
             access_token = create_access_token(identity=user.id)
@@ -67,12 +84,16 @@ def login():
 
 @app.route('/tarefas', methods=['GET', 'POST'])
 @jwt_required()
+@cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["GET", "POST"])
 def manage_tarefas():
+    """
+    Gerenciador de Tarefas
+    """
     try:
         user_id = get_jwt_identity()
         if request.method == 'POST':
             data = request.get_json()
-            print("Data received:", data)  # Log the received data
+            print("Data received:", data)  # Log dos dados recebidos
             tarefa_schema = TarefaSchema(**data)
             tarefa_data = tarefa_schema.model_dump()
             if tarefa_data['due_date']:
@@ -91,7 +112,11 @@ def manage_tarefas():
 
 @app.route('/tarefas/<int:tarefa_id>', methods=['DELETE'])
 @jwt_required()
+@cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["DELETE"])
 def delete_tarefa(tarefa_id):
+    """
+    Deletar Tarefa
+    """
     try:
         user_id = get_jwt_identity()
         tarefa = Tarefa.query.filter_by(id=tarefa_id, user_id=user_id).first()
@@ -104,9 +129,13 @@ def delete_tarefa(tarefa_id):
         print("Error:", str(e))  # Log the error
         return jsonify(message=str(e)), 500
 
-@app.route('/tarefas/<int:tarefa_id>/complete', methods=['POST'])
+@app.route('/tarefas/<int:tarefa_id>/complete', methods=["POST"])
 @jwt_required()
+@cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def complete_tarefa(tarefa_id):
+    """
+    Completar Tarefa
+    """
     try:
         user_id = get_jwt_identity()
         tarefa = Tarefa.query.filter_by(id=tarefa_id, user_id=user_id).first()
