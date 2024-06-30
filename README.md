@@ -59,7 +59,7 @@ gestao-tempo-api/
 1. Clone o repositório:
 
    ```sh
-   git clone https://github.com/seu-usuario/gestao-de-tempo-api.git
+   git clone https://github.com/Cleok3Lima/PUC-Rio-MVP-API.git
    cd gestao-de-tempo-api
    ```
 
