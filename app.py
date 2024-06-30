@@ -1,24 +1,21 @@
 from flask import Flask, jsonify, request, redirect
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS, cross_origin
-from flask_openapi3 import OpenAPI, Info, Tag
-from pydantic import BaseModel, ValidationError
+from flask_openapi3 import Tag
+from pydantic import ValidationError
 from model.base import db
 from model.usuario import Usuario
 from model.tarefa import Tarefa
-from schemas.error import ErrorSchema
 from schemas.usuario import UsuarioSchema
 from schemas.tarefa import TarefaSchema
-from typing import List
 from datetime import datetime
+from flask_swagger_ui import get_swaggerui_blueprint
 
-info = Info(title="Gestão de Tempo API", version="1.0.0")
-app = OpenAPI(__name__, info=info)
+app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tarefas.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'super-secret'  # Deve ser substituida por uma chave secreta segura
+app.config['JWT_SECRET_KEY'] = 'super-secret'  # Deve ser substituida por uma chave SUPER secreta e segura ;)
 
 db.init_app(app)
 jwt = JWTManager(app)
@@ -26,21 +23,28 @@ jwt = JWTManager(app)
 # Configurar CORS globalmente para permitir o cabeçalho Authorization
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True, allow_headers=["Content-Type", "Authorization"], methods=["GET", "POST", "DELETE", "OPTIONS"])
 
-# Tags para a documentação da API
-user_tag = Tag(name="User", description="Operations related to users")
-task_tag = Tag(name="Task", description="Operations related to tasks")
+# Documentação da API
+SWAGGER_URL = '/api/docs'  # URL para acessar a interface do Swagger (sem o '/' final)
+API_URL = '/static/swagger.json'  # API url
+
+# Call factory function to create our blueprint
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,  # Os arquivos estáticos da interface do usuário do Swagger serão mapeados para '{SWAGGER_URL}/dist/'
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': "Gestão de Tempo API"
+    }
+)
+
+app.register_blueprint(swaggerui_blueprint)
 
 @app.route('/')
 def index():
-    return redirect('/openapi')
+    return redirect('/api/docs')
 
-@app.post('/register', tags=[user_tag],
-          responses={"200": UsuarioSchema, "404": ErrorSchema})
+@app.route('/register', methods=['POST'])
 @cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def register():
-    """
-    Registrar um novo usuário
-    """
     try:
         data = request.get_json()
         print("Data received:", data)  # Log dos dados recebidos
@@ -62,13 +66,9 @@ def register():
         print("Error:", str(e))  # Log the error
         return jsonify(message=str(e)), 500
 
-@app.post('/login', tags=[user_tag],
-          responses={"200": UsuarioSchema, "404": ErrorSchema})
+@app.route('/login', methods=['POST'])
 @cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def login():
-    """
-    Login de usuário
-    """
     try:
         data = request.get_json()
         print("Data received:", data)  # Log dos dados recebidos
@@ -86,9 +86,6 @@ def login():
 @jwt_required()
 @cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["GET", "POST"])
 def manage_tarefas():
-    """
-    Gerenciador de Tarefas
-    """
     try:
         user_id = get_jwt_identity()
         if request.method == 'POST':
@@ -114,9 +111,6 @@ def manage_tarefas():
 @jwt_required()
 @cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["DELETE"])
 def delete_tarefa(tarefa_id):
-    """
-    Deletar Tarefa
-    """
     try:
         user_id = get_jwt_identity()
         tarefa = Tarefa.query.filter_by(id=tarefa_id, user_id=user_id).first()
@@ -133,9 +127,6 @@ def delete_tarefa(tarefa_id):
 @jwt_required()
 @cross_origin(origins="*", headers=["Content-Type", "Authorization"], methods=["POST"])
 def complete_tarefa(tarefa_id):
-    """
-    Completar Tarefa
-    """
     try:
         user_id = get_jwt_identity()
         tarefa = Tarefa.query.filter_by(id=tarefa_id, user_id=user_id).first()

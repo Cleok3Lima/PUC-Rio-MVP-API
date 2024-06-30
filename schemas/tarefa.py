@@ -3,8 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 class TarefaSchema(BaseModel):
-    """ Representação de uma nova tarefa
-    """
     id: Optional[int] = None
     title: str
     description: Optional[str]
