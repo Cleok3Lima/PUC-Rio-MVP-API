@@ -2,183 +2,139 @@
 
 ## Descrição
 
-<style>
-img{
-    position: relative;
-    bottom: 60px;
-    float: right;
-    width: 300px;
-}
-</style>
-
-<img alt="Cleok3-pic" src="https://www.cleolima.dev/cleolimadev.svg">
+<p align="center">
+  <img alt="Cleok3-pic" width="300" src="https://cdn.discordapp.com/attachments/1217082427021725849/1256996429528825866/cleolimadev_1.png?ex=6682cca6&is=66817b26&hm=4b1248106917647f3ee387ca82efd4c732cbe5e5aaeb8fca29a7cd3ae8e079f3&">
+</p>
 
 A Gestão de Tempo API é uma aplicação backend desenvolvida em Python utilizando o framework Flask. A API permite gerenciar tarefas diárias, monitorar o tempo e analisar a produtividade. A aplicação inclui funcionalidades como criar tarefas, marcar tarefas como concluídas, deletar tarefas e visualizar todas as tarefas.
 
-## Tecnologias Utilizadas
+## Índice
 
-- Python
+- [Tecnologias](#tecnologias)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Instalação](#instalação)
+- [Uso](#uso)
+- [Rotas da API](#rotas-da-api)
+- [Contribuição](#contribuição)
+- [Licença](#licença)
+
+## Tecnologias
+
+- Python 3.12
 - Flask
 - SQLite
 - Flask-CORS
-- Flasgger (para documentação da API com Swagger)
-- Logging configurado para monitorar eventos da aplicação
+- Flask-JWT-Extended
+- Flask-SQLAlchemy
+- Flask-CORS
+- Flask-OpenAPI3
 
 ## Estrutura do Projeto
 
 ```
 gestao-tempo-api/
+├── instance/
+│   ├── tabelas.db
 ├── model/
 │   ├── __init__.py
 │   ├── base.py
 │   ├── tarefa.py
+│   ├── usuario.py
 ├── schemas/
 │   ├── __init__.py
 │   ├── error.py
 │   ├── tarefa.py
+│   ├── usuario.py
+├── .gitignore
 ├── app.py
 ├── log_config.py
-├── requirements.txt
-├── tarefas.db
-└── README.md
+├── README.md
+└── requirements.txt
 ```
-
-### Pasta log
-
-A pasta log é usada para armazenar arquivos de log gerados pela aplicação. Inicialmente, ela estará vazia, mas será preenchida com arquivos de log conforme a aplicação for executada.
-
-- app.error.log: Armazena logs de erros.
-- app.detailed.log: Armazena logs detalhados de todas as atividades.
 
 ## Configuração e Execução
 
-### Pré-requisitos
-
-- Python 3.x
-- Pip (gerenciador de pacotes do Python)
-
-### Instalação
+## Instalação
 
 1. Clone o repositório:
 
-   ```bash
-   git clone <URL-do-repositorio>
-   cd gestao-tempo-api
+   ```sh
+   git clone https://github.com/seu-usuario/gestao-de-tempo-api.git
+   cd gestao-de-tempo-api
    ```
 
 2. Crie um ambiente virtual e ative-o:
 
-   ```bash
+   ```sh
    python -m venv .venv
-   source .venv/bin/activate   # No Windows use `venv\Scripts\activate`
+   source .venv/bin/activate  # No Windows use: .venv\Scripts\activate
    ```
 
 3. Instale as dependências:
 
-   ```bash
+   ```sh
    pip install -r requirements.txt
    ```
 
-### Execução da Aplicação
+4. Configure a variável de ambiente para a chave secreta do JWT:
 
-1. Inicialize o banco de dados:
-
-   ```bash
-   python -c "from app import init_db; init_db()"
+   ```sh
+   export JWT_SECRET_KEY='sua-chave-secreta'  # No Windows use: set JWT_SECRET_KEY='sua-chave-secreta'
    ```
 
-2. Inicie o servidor:
-
-   ```bash
-   flask run --host 0.0.0.0 --port 5000
+5. Execute a aplicação:
+   ```sh
+   python app.py
    ```
 
-   Em modo de desenvolvimento é recomendado executar utilizando o parâmetro reload, que reiniciará o servidor automaticamente após uma mudança no código fonte.
+## Uso
 
-   ```bash
-   flask run --host 0.0.0.0 --port 5000 --reload
-   ```
-
-A aplicação estará disponível em `http://127.0.0.1:5000`.
+A aplicação estará disponível em `http://localhost:8000`. A documentação Swagger (OpenAPI) pode ser acessada em `http://localhost:8000/openapi`.
 
 ## Rotas da API
 
-### Cadastrar Tarefa (POST)
+### Usuário
 
-- **Endpoint**: `/tarefa`
-- **Descrição**: Adiciona uma nova tarefa.
-- **Parâmetros**:
-  - `titulo` (string): Título da tarefa (obrigatório)
-  - `descricao` (string): Descrição da tarefa (opcional)
-  - `data_vencimento` (string): Data de vencimento da tarefa (opcional)
-- **Exemplo de Request**:
+- `POST /register`: Registrar um novo usuário
 
-  ```json
-  {
-    "titulo": "Estudar Flask",
-    "descricao": "Estudar o framework Flask para desenvolvimento web",
-    "data_vencimento": "2024-07-01"
-  }
-  ```
-
-- **Exemplo de Response**:
-
-  ```json
-  {
-    "message": "Tarefa cadastrada com sucesso!"
-  }
-  ```
-
-### Buscar Tarefas (GET)
-
-- **Endpoint**: `/tarefas`
-- **Descrição**: Retorna uma lista de todas as tarefas cadastradas.
-- **Exemplo de Response**:
-
-  ```json
-  [
+  - Corpo da solicitação:
+    ```json
     {
-      "id": 1,
-      "titulo": "Estudar Flask",
-      "descricao": "Estudar o framework Flask para desenvolvimento web",
-      "data_vencimento": "2024-07-01",
-      "concluida": false
+      "username": "seu_usuario",
+      "password": "sua_senha"
     }
-  ]
-  ```
+    ```
 
-### Deletar Tarefa (DELETE)
+- `POST /login`: Fazer login
+  - Corpo da solicitação:
+    ```json
+    {
+      "username": "seu_usuario",
+      "password": "sua_senha"
+    }
+    ```
 
-- **Endpoint**: `/tarefa`
-- **Descrição**: Deleta uma tarefa pelo ID (Ou pelo título?).
-- **Exemplo de Response**:
+### Tarefas
 
-  ```json
-  {
-    "message": "Tarefa deletada com sucesso!"
-  }
-  ```
+- `GET /tarefas`: Obter todas as tarefas do usuário logado
+- `POST /tarefas`: Criar uma nova tarefa
 
-### Marcar Tarefa como Concluída (PUT)
+  - Corpo da solicitação:
+    ```json
+    {
+      "title": "Título da tarefa",
+      "description": "Descrição da tarefa",
+      "due_date": "dd/mm/yyyy"
+    }
+    ```
 
-- **Endpoint**: `/concluir_tarefa`
-- **Descrição**: Marca uma tarefa como concluída pelo ID.
-- **Exemplo de Response**:
+- `DELETE /tarefas/<int:tarefa_id>`: Deletar uma tarefa
+- `POST /tarefas/<int:tarefa_id>/complete`: Marcar uma tarefa como concluída
 
-  ```json
-  {
-    "message": "Tarefa marcada como concluída!"
-  }
-  ```
+## Contribuição
 
-## Documentação da API
-
-A documentação da API está disponível através do Swagger. Após iniciar o servidor, acesse a documentação em `http://127.0.0.1:5000/apidocs`.
-
-## Contribuições
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests para melhorar esta aplicação.
 
 ## Licença
 
-Este projeto está licenciado sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
