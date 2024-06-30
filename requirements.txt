@@ -5,3 +5,4 @@ Flask-JWT-Extended
 Pydantic
 flask-openapi3
 werkzeug
+flask-swagger-ui
