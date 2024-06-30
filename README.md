@@ -28,6 +28,7 @@ A Gestão de Tempo API é uma aplicação backend desenvolvida em Python utiliza
 - Flask-SQLAlchemy
 - Flask-CORS
 - Flask-OpenAPI3
+- Flask-Swagger-UI
 
 ## Estrutura do Projeto
 
@@ -45,6 +46,8 @@ gestao-tempo-api/
 │   ├── error.py
 │   ├── tarefa.py
 │   ├── usuario.py
+├── static/
+│   ├── swagger.json
 ├── .gitignore
 ├── app.py
 ├── log_config.py

@@ -100,7 +100,7 @@ def manage_tarefas():
             db.session.commit()
             return jsonify(message="Tarefa created"), 201
         elif request.method == 'GET':
-            tarefas = Tarefa.query.filter_by(user_id=user_id).all()
+            tarefas = Tarefa.query.filter_by(user_id=user_id).order_by(Tarefa.due_date.asc()).all()
             tarefas_schema = [TarefaSchema.model_validate(tarefa) for tarefa in tarefas]
             return jsonify([tarefa.model_dump() for tarefa in tarefas_schema])
     except Exception as e:

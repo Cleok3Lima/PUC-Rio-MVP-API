@@ -4,9 +4,6 @@
     "title": "Gestão de Tempo API",
     "description": "API para uma aplicação de Gestão de Tempo e Produtividade. Permite o cadastro, login de usuários e a gestão de tarefas, incluindo criação, visualização, conclusão e exclusão de tarefas.",
     "version": "1.0.0",
-    "contact": {
-      "email": "support@example.com"
-    },
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
