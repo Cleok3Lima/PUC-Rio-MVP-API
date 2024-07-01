@@ -432,7 +432,7 @@
         "example": {
           "title": "Finish project",
           "description": "Complete the project by the end of the month",
-          "due_date": "31/12/2024",
+          "due_date": "2024-11-23",
           "completed": false
         }
       },

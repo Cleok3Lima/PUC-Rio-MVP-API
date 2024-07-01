@@ -92,7 +92,7 @@ gestao-tempo-api/
 
 ## Uso
 
-A aplicação estará disponível em `http://localhost:8000`. A documentação Swagger (OpenAPI) pode ser acessada em `http://localhost:8000/openapi`.
+A aplicação estará disponível em `http://localhost:8000`. A documentação Swagger (OpenAPI) pode ser acessada em `http://localhost:8000/api/docs`.
 
 ## Rotas da API
 
