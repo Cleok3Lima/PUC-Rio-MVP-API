@@ -127,7 +127,8 @@ A aplicação estará disponível em `http://localhost:8000`. A documentação S
     {
       "title": "Título da tarefa",
       "description": "Descrição da tarefa",
-      "due_date": "dd/mm/yyyy"
+      "due_date": "yyyy-mm-dd",
+      "completed": false
     }
     ```
 
